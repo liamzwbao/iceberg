@@ -27,9 +27,12 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.util.DataFormatConverters;
 import org.apache.flink.table.legacy.api.TableSchema;
+import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.test.junit5.MiniClusterExtension;
 import org.apache.flink.types.Row;
 import org.apache.iceberg.DistributionMode;
@@ -55,10 +58,10 @@ public class TestFlinkIcebergSinkBase {
       new HadoopCatalogExtension(DATABASE, TestFixtures.TABLE);
 
   protected static final TypeInformation<Row> ROW_TYPE_INFO =
-      new RowTypeInfo(SimpleDataUtil.FLINK_SCHEMA.getFieldTypes());
+      new RowTypeInfo(fromDataTypeToInternalInfo(SimpleDataUtil.FLINK_SCHEMA.getColumnDataTypes().toArray(new DataType[0])));
 
   protected static final DataFormatConverters.RowConverter CONVERTER =
-      new DataFormatConverters.RowConverter(SimpleDataUtil.FLINK_SCHEMA.getFieldDataTypes());
+      new DataFormatConverters.RowConverter(SimpleDataUtil.FLINK_SCHEMA.getColumnDataTypes().toArray(new DataType[0]));
 
   protected TableLoader tableLoader;
   protected Table table;
@@ -86,7 +89,7 @@ public class TestFlinkIcebergSinkBase {
   }
 
   protected void testWriteRow(
-      int writerParallelism, TableSchema tableSchema, DistributionMode distributionMode)
+          int writerParallelism, ResolvedSchema resolvedSchema, DistributionMode distributionMode)
       throws Exception {
     List<Row> rows = createRows("");
     DataStream<Row> dataStream = env.addSource(createBoundedSource(rows), ROW_TYPE_INFO);
@@ -94,7 +97,7 @@ public class TestFlinkIcebergSinkBase {
     FlinkSink.forRow(dataStream, SimpleDataUtil.FLINK_SCHEMA)
         .table(table)
         .tableLoader(tableLoader)
-        .tableSchema(tableSchema)
+        .resolvedSchema(resolvedSchema)
         .writeParallelism(writerParallelism)
         .distributionMode(distributionMode)
         .append();
