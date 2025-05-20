@@ -245,6 +245,7 @@ public class FlinkSchemaUtil {
       columns.add(
           Column.physical(field.getName(), TypeConversions.fromLogicalToDataType(field.getType())));
     }
+
     return ResolvedSchema.of(columns);
   }
 
