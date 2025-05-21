@@ -136,7 +136,8 @@ public class FlinkSchemaUtil {
    * @param flinkSchema a Flink TableSchema
    * @return the equivalent Schema
    * @throws IllegalArgumentException if the type cannot be converted or there are missing ids
-   * @deprecated use {@link #convert(Schema, ResolvedSchema)} instead.
+   * @deprecated since 1.10.0, will be removed in 2.0.0. Use {@link #convert(Schema,
+   *     ResolvedSchema)} instead.
    */
   @Deprecated
   public static Schema convert(Schema baseSchema, TableSchema flinkSchema) {
@@ -222,7 +223,8 @@ public class FlinkSchemaUtil {
    *
    * @param rowType a RowType
    * @return Flink TableSchema
-   * @deprecated use {@link #toResolvedSchema(RowType)} instead
+   * @deprecated since 1.10.0, will be removed in 2.0.0. Use {@link #toResolvedSchema(RowType)}
+   *     instead
    */
   @Deprecated
   public static TableSchema toSchema(RowType rowType) {

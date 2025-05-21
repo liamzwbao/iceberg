@@ -63,7 +63,7 @@ public class FlinkDynamicTableFactory
     ObjectIdentifier objectIdentifier = context.getObjectIdentifier();
     ResolvedCatalogTable resolvedCatalogTable = context.getCatalogTable();
     Map<String, String> tableProps = resolvedCatalogTable.getOptions();
-    ResolvedSchema tableSchema =
+    ResolvedSchema resolvedSchema =
         ResolvedSchema.of(
             resolvedCatalogTable.getResolvedSchema().getColumns().stream()
                 .filter(Column::isPhysical)
@@ -81,7 +81,8 @@ public class FlinkDynamicTableFactory
               objectIdentifier.getObjectName());
     }
 
-    return new IcebergTableSource(tableLoader, tableSchema, tableProps, context.getConfiguration());
+    return new IcebergTableSource(
+        tableLoader, resolvedSchema, tableProps, context.getConfiguration());
   }
 
   @Override
