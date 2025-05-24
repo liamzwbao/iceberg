@@ -18,11 +18,14 @@
  */
 package org.apache.iceberg.flink;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.Column;
 import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.catalog.UniqueConstraint;
 import org.apache.flink.table.legacy.api.TableSchema;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
@@ -256,7 +259,10 @@ public class FlinkSchemaUtil {
    *
    * @param schema iceberg schema to convert.
    * @return Flink TableSchema.
+   * @deprecated since 1.10.0, will be removed in 2.0.0. Use {@link #toResolvedSchema(Schema)}
+   *     instead
    */
+  @Deprecated
   public static TableSchema toSchema(Schema schema) {
     TableSchema.Builder builder = TableSchema.builder();
 
@@ -280,5 +286,42 @@ public class FlinkSchemaUtil {
     }
 
     return builder.build();
+  }
+
+  /**
+   * Convert a {@link Schema} to a {@link ResolvedSchema}.
+   *
+   * @param schema iceberg schema to convert.
+   * @return Flink ResolvedSchema.
+   */
+  public static ResolvedSchema toResolvedSchema(Schema schema) {
+    RowType rowType = convert(schema);
+    List<Column> columns = Lists.newArrayListWithExpectedSize(rowType.getFieldCount());
+
+    // Add columns.
+    for (RowType.RowField field : rowType.getFields()) {
+      columns.add(
+          Column.physical(field.getName(), TypeConversions.fromLogicalToDataType(field.getType())));
+    }
+
+    // Add primary key.
+    Set<Integer> identifierFieldIds = schema.identifierFieldIds();
+    UniqueConstraint uniqueConstraint = null;
+    if (!identifierFieldIds.isEmpty()) {
+      List<String> primaryKeyColumns =
+          Lists.newArrayListWithExpectedSize(identifierFieldIds.size());
+      for (Integer identifierFieldId : identifierFieldIds) {
+        String columnName = schema.findColumnName(identifierFieldId);
+        Preconditions.checkNotNull(
+            columnName, "Cannot find field with id %s in schema %s", identifierFieldId, schema);
+
+        primaryKeyColumns.add(columnName);
+      }
+
+      uniqueConstraint =
+          UniqueConstraint.primaryKey(UUID.randomUUID().toString(), primaryKeyColumns);
+    }
+
+    return new ResolvedSchema(columns, Collections.emptyList(), uniqueConstraint);
   }
 }
