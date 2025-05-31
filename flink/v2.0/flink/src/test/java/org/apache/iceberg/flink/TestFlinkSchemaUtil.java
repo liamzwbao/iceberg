@@ -411,9 +411,9 @@ public class TestFlinkSchemaUtil {
                         Types.NestedField.required(2, "inner", Types.IntegerType.get())))),
             Sets.newHashSet(2));
 
-    assertThatThrownBy(() -> FlinkSchemaUtil.toSchema(icebergSchema))
+    assertThatThrownBy(() -> FlinkSchemaUtil.toResolvedSchema(icebergSchema))
         .isInstanceOf(ValidationException.class)
-        .hasMessageStartingWith("Could not create a PRIMARY KEY")
+        .hasMessageStartingWith("Invalid primary key")
         .hasMessageContaining("Column 'struct.inner' does not exist.");
   }
 }
