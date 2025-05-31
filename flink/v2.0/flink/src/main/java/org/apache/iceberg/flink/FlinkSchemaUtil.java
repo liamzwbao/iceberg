@@ -230,8 +230,7 @@ public class FlinkSchemaUtil {
    *
    * @param rowType a RowType
    * @return Flink TableSchema
-   * @deprecated since 1.10.0, will be removed in 2.0.0. Use {@link #toResolvedSchema(RowType)}
-   *     instead
+   * @deprecated since 1.10.0, will be removed in 2.0.0.
    */
   @Deprecated
   public static TableSchema toSchema(RowType rowType) {
@@ -248,7 +247,7 @@ public class FlinkSchemaUtil {
    * @param rowType a RowType
    * @return Flink ResolvedSchema
    */
-  public static ResolvedSchema toResolvedSchema(RowType rowType) {
+  static ResolvedSchema toResolvedSchema(RowType rowType) {
     List<Column> columns = Lists.newArrayListWithExpectedSize(rowType.getFieldCount());
     for (RowType.RowField field : rowType.getFields()) {
       columns.add(
